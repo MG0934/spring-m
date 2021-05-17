@@ -15,14 +15,10 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         //获取类定义
         BeanDefinition bd = getBeanDefinition(name);
         //创建对象
-        Object bean = createBean(bd);
-        //保存返回
-        setSingleton(name,bean);
-
-        return bean;
+        return createBean(name,bd);
     }
 
     protected abstract BeanDefinition getBeanDefinition(String name);
 
-    protected abstract Object createBean(BeanDefinition bd);
+    protected abstract Object createBean(String beanName,BeanDefinition bd);
 }
