@@ -1,10 +1,13 @@
 package org.springframework.beans.factory.config;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.HierarchicalBeanFactory;
+import org.springframework.beans.factory.BeanFactory;
 
-public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, SingletonBeanRegistry {
+public interface ConfigurableBeanFactory extends BeanFactory, SingletonBeanRegistry {
 
-    <T> T getBean(String beanName,Class<T> requiredType) throws BeansException;
+    /**
+     * @param beanPostProcessor
+     */
+    void addBeanPostProcessor(BeanPostProcessor beanPostProcessor);
 
 }

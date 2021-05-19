@@ -1,11 +1,14 @@
 package org.springframework.beans.factory.support;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.BeanReferece;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.PropertyValue;
 import cn.hutool.core.bean.BeanUtil;
+
+import java.util.List;
 
 public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFactory implements AutowireCapableBeanFactory {
 
@@ -15,62 +18,83 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
     InstantiationStrategy instantiationStrategy = new SimpleInstantiationStrategy();
 
     @Override
-    protected Object createBean(String beanName,BeanDefinition bd) {
-        return doCreateBean(beanName,bd);
+    protected Object createBean(String beanName, BeanDefinition bd) {
+        return doCreateBean(beanName, bd);
     }
 
-    protected Object doCreateBean(String beanName,BeanDefinition bd) {
+    protected Object doCreateBean(String beanName, BeanDefinition bd) {
         //实例化
-        Object instantiate = null;
+        Object bean = null;
         try {
             //实例化对象
-           instantiate = createBeanInstance (bd);
+            bean = createBeanInstance(bd);
             //属性填充
-           applyPropertyValues(beanName, instantiate, bd);
-        }catch (BeansException exception){
+            applyPropertyValues(beanName, bean, bd);
+            //执行bean的初始化方法 和 BeanPostProcessor的前置和后置方法
+            initializeBean(beanName, bean, bd);
+        } catch (BeansException exception) {
             throw new BeansException("Instantiation of bean failed", exception);
         }
 
-        setSingleton(beanName,instantiate);
+        setSingleton(beanName, bean);
         //添加到singleton
-        return instantiate;
+        return bean;
     }
+
+    protected Object initializeBean(String beanName, Object bean, BeanDefinition bd) {
+        //执行BeanPostBeforeProcessor的前置处理
+        Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, beanName);
+
+        //初始化对象
+        invokeInitMethods(beanName, wrappedBean, bd);
+
+        //执行BeanPostAfterProcessor的后置处理
+        wrappedBean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
+        return wrappedBean;
+    }
+
 
     /**
      * 创建实例化对象
+     *
      * @param bd
      * @return
      */
-    protected Object createBeanInstance(BeanDefinition bd){
+    protected Object createBeanInstance(BeanDefinition bd) {
         return getInstantiationStrategy().instantiate(bd);
-    };
+    }
+
+    ;
 
     /**
      * 为Bean属性填充
+     *
      * @param beanName
      * @param bean
      * @param bd
      */
-    protected void applyPropertyValues(String beanName, Object bean, BeanDefinition bd){
+    protected void applyPropertyValues(String beanName, Object bean, BeanDefinition bd) {
 
         try {
             for (PropertyValue propertyValue : bd.getPropertyValues().getPropertyValues()) {
                 String name = propertyValue.getName();
                 Object value = propertyValue.getValue();
 
-                if(value instanceof BeanReferece){
+                if (value instanceof BeanReferece) {
                     String referceName = ((BeanReferece) value).getBeanName();
                     value = getBean(referceName);
                 }
 
-                BeanUtil.setFieldValue(bean,name,value);
+                BeanUtil.setFieldValue(bean, name, value);
             }
 
-        }catch (Exception ex){
-            throw  new BeansException("Error setting property values for bean:"+beanName,ex);
+        } catch (Exception ex) {
+            throw new BeansException("Error setting property values for bean:" + beanName, ex);
         }
 
-    };
+    }
+
+    ;
 
     public InstantiationStrategy getInstantiationStrategy() {
         return instantiationStrategy;
@@ -78,9 +102,48 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
 
     /**
      * 传入 自定义的 实例化策略
+     *
      * @param instantiationStrategy
      */
     public void setInstantiationStrategy(InstantiationStrategy instantiationStrategy) {
         this.instantiationStrategy = instantiationStrategy;
+    }
+
+
+    private void invokeInitMethods(String beanName, Object wrappedBean, BeanDefinition bd) {
+        //TODO 后面会实现
+        System.out.println("执行bean[" + beanName + "]的初始化方法");
+    }
+
+    @Override
+    public Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, String beanName) throws BeansException {
+
+        Object result = existingBean;
+
+        for (BeanPostProcessor processor : getBeanPostProcessor()) {
+            Object current = processor.postProcessBeforeInitialization(result, beanName);
+            if (current == null) {
+                return result;
+            }
+
+            result = current;
+        }
+
+        return result;
+    }
+
+    @Override
+    public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName) throws BeansException {
+
+        Object result = existingBean;
+
+        for (BeanPostProcessor processor : getBeanPostProcessor()) {
+            Object current = processor.postProcessAfterInitialization(result,beanName);
+            if(current==null){
+                return result;
+            }
+            result = current;
+        }
+        return result;
     }
 }
