@@ -1,8 +1,8 @@
 import bean.Car;
 import bean.Person;
-import beans.exception.BeansException;
-import beans.support.DefaultListableBeanFactory;
-import beans.xml.XmlBeanDefinitionReader;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.junit.Test;
 
 public class XmlFileDefineBeanTest {

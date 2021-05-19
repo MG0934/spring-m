@@ -1,7 +1,6 @@
 import cn.hutool.core.io.IoUtil;
-import core.io.DefaultResourceLoader;
-import core.io.Resource;
-import org.junit.Assert;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
 import org.junit.Test;
 
 import java.io.IOException;

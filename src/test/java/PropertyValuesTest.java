@@ -1,8 +1,8 @@
 import bean.Person;
-import beans.config.BeanDefinition;
-import beans.support.DefaultListableBeanFactory;
-import beans.utils.PropertyValue;
-import beans.utils.PropertyValues;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.PropertyValue;
+import org.springframework.beans.PropertyValues;
 import org.junit.Test;
 
 public class PropertyValuesTest {

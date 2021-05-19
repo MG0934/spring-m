@@ -1,6 +1,6 @@
 import bean.Person;
-import beans.config.BeanDefinition;
-import beans.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.junit.Before;
 import org.junit.Test;
 
