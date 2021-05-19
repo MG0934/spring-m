@@ -2,7 +2,17 @@ package bean;
 
 public class Car {
 
+    private String name;
+
     private Person person;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Person getPerson() {
         return person;
@@ -19,7 +29,8 @@ public class Car {
     @Override
     public String toString() {
         return "Car{" +
-                "person=" + person +
+                "name='" + name + '\'' +
+                ", person=" + person +
                 '}';
     }
 }

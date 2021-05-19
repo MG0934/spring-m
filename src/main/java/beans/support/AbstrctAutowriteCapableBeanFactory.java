@@ -3,10 +3,11 @@ package beans.support;
 import beans.config.BeanDefinition;
 import beans.config.BeanReferece;
 import beans.exception.BeansException;
+import beans.factory.AutowireCapableBeanFactory;
 import beans.utils.PropertyValue;
 import cn.hutool.core.bean.BeanUtil;
 
-public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFactory {
+public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFactory implements AutowireCapableBeanFactory {
 
     /**
      * 默认初始化 简单实例化策略

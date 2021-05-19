@@ -1,4 +1,4 @@
-package beans;
+package beans.factory;
 
 public interface BeanFactory {
 
