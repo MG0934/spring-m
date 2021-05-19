@@ -1,6 +1,7 @@
 package beans.support;
 
 import beans.config.BeanDefinition;
+import beans.config.BeanReferece;
 import beans.exception.BeansException;
 import beans.utils.PropertyValue;
 import cn.hutool.core.bean.BeanUtil;
@@ -55,6 +56,11 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
             for (PropertyValue propertyValue : bd.getPropertyValues().getPropertyValues()) {
                 String name = propertyValue.getName();
                 Object value = propertyValue.getValue();
+
+                if(value instanceof BeanReferece){
+                    String referceName = ((BeanReferece) value).getBeanName();
+                    value = getBean(referceName);
+                }
 
                 BeanUtil.setFieldValue(bean,name,value);
             }

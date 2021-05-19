@@ -1,3 +1,4 @@
+import bean.Person;
 import beans.BeanFactory;
 import beans.config.BeanDefinition;
 import beans.support.DefaultListableBeanFactory;
