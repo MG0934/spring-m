@@ -1,5 +1,7 @@
 package org.springframework.beans.factory.support;
 
+import cn.hutool.core.util.StrUtil;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.BeanReferece;
@@ -36,10 +38,28 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
             throw new BeansException("Instantiation of bean failed", exception);
         }
 
+        //注册有销毁方法得bean
+        registerDisposableBeanIfNecessary(beanName,bean,bd);
+
         setSingleton(beanName, bean);
         //添加到singleton
         return bean;
     }
+
+    /**
+     * 注册有销毁方法得Bean 即bean继承自disposable或者自定义得销毁方法
+     *
+     * @param beanName
+     * @param bean
+     * @param bd
+     */
+    protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition bd){
+
+        if(bean instanceof DisposableBean || StrUtil.isNotEmpty(bd.getDestoryMethodName())){
+            registerDisposableBean(beanName,new DisposableBeanAdapter(bean,beanName,bd));
+        }
+
+    };
 
     protected Object initializeBean(String beanName, Object bean, BeanDefinition bd) {
         //执行BeanPostBeforeProcessor的前置处理
