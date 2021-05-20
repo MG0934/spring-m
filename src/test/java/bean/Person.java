@@ -1,9 +1,14 @@
 package bean;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class Person implements InitializingBean, DisposableBean {
+public class Person implements InitializingBean, DisposableBean, ApplicationContextAware, BeanFactoryAware {
     String name;
 
     int age;
@@ -56,5 +61,15 @@ public class Person implements InitializingBean, DisposableBean {
     @Override
     public void afterPropertiesSet() {
         System.out.println("initializingBean afterPropertiesSet method");
+    }
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        System.out.println(beanFactory);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        System.out.println(applicationContext);
     }
 }

@@ -2,6 +2,7 @@ package org.springframework.beans.factory.support;
 
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -68,6 +69,11 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
     ;
 
     protected Object initializeBean(String beanName, Object bean, BeanDefinition bd) {
+        //根据感知器注入
+        if(bean instanceof BeanFactoryAware){
+            ((BeanFactoryAware) bean).setBeanFactory(this);
+        }
+
         //执行BeanPostBeforeProcessor的前置处理
         Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, beanName);
 
