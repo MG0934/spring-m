@@ -1,7 +1,9 @@
 package org.springframework.beans.factory.support;
 
+import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.BeanReferece;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.PropertyValue;
 import cn.hutool.core.bean.BeanUtil;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFactory implements AutowireCapableBeanFactory {
@@ -32,6 +35,7 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
             bean = createBeanInstance(bd);
             //属性填充
             applyPropertyValues(beanName, bean, bd);
+            //属性填充好了之后 调用init方法
             //执行bean的初始化方法 和 BeanPostProcessor的前置和后置方法
             initializeBean(beanName, bean, bd);
         } catch (BeansException exception) {
@@ -39,7 +43,7 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
         }
 
         //注册有销毁方法得bean
-        registerDisposableBeanIfNecessary(beanName,bean,bd);
+        registerDisposableBeanIfNecessary(beanName, bean, bd);
 
         setSingleton(beanName, bean);
         //添加到singleton
@@ -53,13 +57,15 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
      * @param bean
      * @param bd
      */
-    protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition bd){
+    protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition bd) {
 
-        if(bean instanceof DisposableBean || StrUtil.isNotEmpty(bd.getDestoryMethodName())){
-            registerDisposableBean(beanName,new DisposableBeanAdapter(bean,beanName,bd));
+        if (bean instanceof DisposableBean || StrUtil.isNotEmpty(bd.getDestoryMethodName())) {
+            registerDisposableBean(beanName, new DisposableBeanAdapter(bean, beanName, bd));
         }
 
-    };
+    }
+
+    ;
 
     protected Object initializeBean(String beanName, Object bean, BeanDefinition bd) {
         //执行BeanPostBeforeProcessor的前置处理
@@ -130,9 +136,26 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
     }
 
 
-    private void invokeInitMethods(String beanName, Object wrappedBean, BeanDefinition bd) {
-        //TODO 后面会实现
-        System.out.println("执行bean[" + beanName + "]的初始化方法");
+    private void invokeInitMethods(String beanName, Object bean, BeanDefinition bd) {
+
+        if (bean instanceof InitializingBean) {
+            ((InitializingBean) bean).afterPropertiesSet();
+        }
+
+        //获取是否有init 方法
+        if (StrUtil.isNotEmpty(bd.getInitMethodName())) {
+            Method initMethod = ClassUtil.getPublicMethod(bd.getBeanClass(), bd.getInitMethodName());
+            if (initMethod == null) {
+                throw new BeansException("Could not find an init method name " + initMethod);
+            }
+
+            try {
+                initMethod.invoke(bean);
+            }catch (Exception ex){
+                throw new BeansException("Could not find an init method name " + initMethod);
+            }
+        }
+
     }
 
     @Override
@@ -158,8 +181,8 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
         Object result = existingBean;
 
         for (BeanPostProcessor processor : getBeanPostProcessor()) {
-            Object current = processor.postProcessAfterInitialization(result,beanName);
-            if(current==null){
+            Object current = processor.postProcessAfterInitialization(result, beanName);
+            if (current == null) {
                 return result;
             }
             result = current;

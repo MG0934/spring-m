@@ -1,5 +1,6 @@
 package org.springframework.beans.factory.support;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -14,7 +15,7 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
     @Override
     public Object getBean(String name) {
         Object singleton = getSingleton(name);
-        if(singleton!=null){
+        if (singleton != null) {
             return singleton;
         }
 
@@ -22,7 +23,8 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         //获取类定义
         BeanDefinition bd = getBeanDefinition(name);
         //创建对象
-        return createBean(name,bd);
+
+        return createBean(name, bd);
     }
 
     @Override
@@ -31,11 +33,11 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         this.beanPostProcessors.add(beanPostProcessor);
     }
 
-    public List<BeanPostProcessor> getBeanPostProcessor(){
+    public List<BeanPostProcessor> getBeanPostProcessor() {
         return this.beanPostProcessors;
     }
 
     protected abstract BeanDefinition getBeanDefinition(String name);
 
-    protected abstract Object createBean(String beanName,BeanDefinition bd);
+    protected abstract Object createBean(String beanName, BeanDefinition bd);
 }
