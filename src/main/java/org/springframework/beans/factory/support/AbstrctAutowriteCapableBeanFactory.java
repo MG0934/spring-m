@@ -47,7 +47,7 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
         registerDisposableBeanIfNecessary(beanName, bean, bd);
         //添加到singleton
         if(bd.isSingleton()){
-            setSingleton(beanName, bean);
+            addSingleton(beanName, bean);
         }
         return bean;
     }
