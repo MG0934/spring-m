@@ -5,11 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.BeanReferece;
+import org.springframework.beans.factory.config.*;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.PropertyValue;
 import cn.hutool.core.bean.BeanUtil;
 
@@ -25,8 +22,40 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
 
     @Override
     protected Object createBean(String beanName, BeanDefinition bd) {
+
+        //如果bean需要代理，则直接返回代理对象
+        Object bean = resolveBeforeInstantiation(beanName, bd);
+        if (bean != null) {
+            return bean;
+        }
+
         return doCreateBean(beanName, bd);
     }
+
+    protected Object resolveBeforeInstantiation(String beanName, BeanDefinition bd){
+
+        Object bean = applyBeanPostProcessorsBeforeInstantiation(bd.getBeanClass(),beanName);
+
+        if(bean!=null){
+            return applyBeanPostProcessorsBeforeInitialization(bean,beanName);
+        }
+
+        return null;
+    }
+
+    protected Object applyBeanPostProcessorsBeforeInstantiation(Class beanClass, String beanName){
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessor()) {
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                Object result = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessBeforeInstantiation(beanClass, beanName);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    };
+
+    ;
 
     protected Object doCreateBean(String beanName, BeanDefinition bd) {
         //实例化
