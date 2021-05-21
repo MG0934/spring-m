@@ -9,12 +9,19 @@ import java.lang.reflect.Method;
 
 public class MethodBeforeAdviceInterceptor implements MethodInterceptor {
 
-    private final MethodBeforeAdvice advice;
+    private MethodBeforeAdvice advice;
+
+    public  MethodBeforeAdviceInterceptor(){
+
+    }
 
     public MethodBeforeAdviceInterceptor(MethodBeforeAdvice advice) {
         this.advice = advice;
     }
 
+    public void setAdvice(MethodBeforeAdvice advice){
+        this.advice = advice;
+    }
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
