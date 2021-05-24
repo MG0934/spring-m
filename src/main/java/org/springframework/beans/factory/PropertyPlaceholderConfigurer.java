@@ -7,6 +7,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
+import org.springframework.utils.StringValueResolver;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -25,6 +26,10 @@ public class PropertyPlaceholderConfigurer implements BeanFactoryPostProcessor {
         Properties properties = loadProperties();
         //属性值替换占位符
         processProperties(beanFactory, properties);
+
+        //往容器中添加字符解析器，供解析@Value注解使用
+        StringValueResolver valueResolver = new PlaceholderResolvingStringValueResolver(properties);
+        beanFactory.addEmbeddedValueResolver(valueResolver);
     }
 
     private Properties loadProperties() {
@@ -49,26 +54,31 @@ public class PropertyPlaceholderConfigurer implements BeanFactoryPostProcessor {
 
     }
 
-    private void resolvePropertyValues(BeanDefinition beanDefinition, Properties properties) {
+    public void resolvePropertyValues(BeanDefinition beanDefinition, Properties properties) {
 
         PropertyValues propertyValues = beanDefinition.getPropertyValues();
         for (PropertyValue propertyValue : propertyValues.getPropertyValues()) {
             Object value = propertyValue.getValue();
             if (value instanceof String) {
-                String strVal = (String) value;
-                StringBuffer buf = new StringBuffer(strVal);
-                int startIndex = strVal.indexOf(PLACEHOLDER_PREFIX);
-                int endIndex = strVal.indexOf(PLACEHOLDER_SUFFIX);
-                //判断这是一个占位符
-                if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
-                    String propKey = strVal.substring(startIndex+2,endIndex);
-                    String propVal = properties.getProperty(propKey);
-                    buf.replace(startIndex,endIndex+1,propVal);
-                    //直接修改就可以
-                    propertyValue.setValue(buf.toString());
-                }
+                value = resolvePlaceholder((String) value, properties);
+                //propertyValues.addPropertyValue(new PropertyValue(propertyValue.getName(), value));
+                propertyValue.setValue(value);
             }
         }
+    }
+
+    public String resolvePlaceholder(String value, Properties properties) {
+        //TODO 仅简单支持一个占位符的格式
+        String strVal = value;
+        StringBuffer buf = new StringBuffer(strVal);
+        int startIndex = strVal.indexOf(PLACEHOLDER_PREFIX);
+        int endIndex = strVal.indexOf(PLACEHOLDER_SUFFIX);
+        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+            String propKey = strVal.substring(startIndex + 2, endIndex);
+            String propVal = properties.getProperty(propKey);
+            buf.replace(startIndex, endIndex + 1, propVal);
+        }
+        return buf.toString();
     }
 
     public String getLocation() {
@@ -79,3 +89,4 @@ public class PropertyPlaceholderConfigurer implements BeanFactoryPostProcessor {
         this.location = location;
     }
 }
+

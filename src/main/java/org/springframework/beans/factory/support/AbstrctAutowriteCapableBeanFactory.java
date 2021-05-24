@@ -2,6 +2,7 @@ package org.springframework.beans.factory.support;
 
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
+import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -63,6 +64,8 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
         try {
             //实例化对象
             bean = createBeanInstance(bd);
+            //在设置bean属性之前，允许BeanPostProcessor修改属性值
+            applyBeanPostprocessorsBeforeApplyingPropertyValues(beanName, bean, bd);
             //属性填充
             applyPropertyValues(beanName, bean, bd);
             //属性填充好了之后 调用init方法
@@ -80,6 +83,26 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
         }
         return bean;
     }
+
+    /**
+     * 在设置bean属性之前，允许BeanPostProcessor修改属性值
+     *
+     * @param beanName
+     * @param bean
+     * @param
+     */
+    protected void applyBeanPostprocessorsBeforeApplyingPropertyValues(String beanName, Object bean, BeanDefinition bd){
+        for (BeanPostProcessor beanPostProcessor :getBeanPostProcessor()) {
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                PropertyValues pvs = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessPropertyValues(bd.getPropertyValues(), bean, beanName);
+                if (pvs != null) {
+                    for (PropertyValue propertyValue : pvs.getPropertyValues()) {
+                        bd.getPropertyValues().addPropertyValue(propertyValue);
+                    }
+                }
+            }
+        }
+    };
 
     /**
      * 注册有销毁方法得Bean 即bean继承自disposable或者自定义得销毁方法

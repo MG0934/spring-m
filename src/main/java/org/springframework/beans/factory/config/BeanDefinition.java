@@ -28,7 +28,7 @@ public class BeanDefinition {
     private boolean prototype = false;
 
     public BeanDefinition(Class beanClass) {
-        this(beanClass,null);
+        this(beanClass,new PropertyValues());
     }
 
     public BeanDefinition(Class beanClass, PropertyValues propertyValues) {
