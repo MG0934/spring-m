@@ -24,27 +24,27 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
     @Override
     protected Object createBean(String beanName, BeanDefinition bd) {
 
-        //如果bean需要代理，则直接返回代理对象
-        Object bean = resolveBeforeInstantiation(beanName, bd);
-        if (bean != null) {
-            return bean;
-        }
+//        //如果bean需要代理，则直接返回代理对象
+//        Object bean = resolveBeforeInstantiation(beanName, bd);
+//        if (bean != null) {
+//            return bean;
+//        }
 
         return doCreateBean(beanName, bd);
     }
 
-    protected Object resolveBeforeInstantiation(String beanName, BeanDefinition bd){
+//    protected Object resolveBeforeInstantiation(String beanName, BeanDefinition bd){
+//
+//        Object bean = applyBeanPostProcessorsBeforeInstantiation(bd.getBeanClass(),beanName);
+//
+//        if(bean!=null){
+//            return applyBeanPostProcessorsBeforeInitialization(bean,beanName);
+//        }
+//
+//        return null;
+//    }
 
-        Object bean = applyBeanPostProcessorsBeforeInstantiation(bd.getBeanClass(),beanName);
-
-        if(bean!=null){
-            return applyBeanPostProcessorsBeforeInitialization(bean,beanName);
-        }
-
-        return null;
-    }
-
-    protected Object applyBeanPostProcessorsBeforeInstantiation(Class beanClass, String beanName){
+    protected Object applyBeanPostProcessorsBeforeInstantiation(Class beanClass, String beanName) {
         for (BeanPostProcessor beanPostProcessor : getBeanPostProcessor()) {
             if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
                 Object result = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessBeforeInstantiation(beanClass, beanName);
@@ -54,9 +54,9 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
             }
         }
         return null;
-    };
+    }
 
-    ;
+    ;;
 
     protected Object doCreateBean(String beanName, BeanDefinition bd) {
         //实例化
@@ -78,7 +78,7 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
         //注册有销毁方法得bean
         registerDisposableBeanIfNecessary(beanName, bean, bd);
         //添加到singleton
-        if(bd.isSingleton()){
+        if (bd.isSingleton()) {
             addSingleton(beanName, bean);
         }
         return bean;
@@ -91,18 +91,28 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
      * @param bean
      * @param
      */
-    protected void applyBeanPostprocessorsBeforeApplyingPropertyValues(String beanName, Object bean, BeanDefinition bd){
-        for (BeanPostProcessor beanPostProcessor :getBeanPostProcessor()) {
+    protected void applyBeanPostprocessorsBeforeApplyingPropertyValues(String beanName, Object bean, BeanDefinition bd) {
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessor()) {
             if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
                 PropertyValues pvs = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessPropertyValues(bd.getPropertyValues(), bean, beanName);
                 if (pvs != null) {
                     for (PropertyValue propertyValue : pvs.getPropertyValues()) {
-                        bd.getPropertyValues().addPropertyValue(propertyValue);
+                        PropertyValues propertyValues = new PropertyValues();
+                        propertyValues.addPropertyValue(propertyValue);
+
+                        //循环旧值
+                        for (PropertyValue value : bd.getPropertyValues().getPropertyValues()) {
+                            propertyValues.addPropertyValue(value);
+                        }
+
+                        //复制
+                        bd.setPropertyValues(propertyValues);
                     }
                 }
             }
         }
-    };
+    }
+    ;
 
     /**
      * 注册有销毁方法得Bean 即bean继承自disposable或者自定义得销毁方法
@@ -123,7 +133,7 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
 
     protected Object initializeBean(String beanName, Object bean, BeanDefinition bd) {
         //根据感知器注入
-        if(bean instanceof BeanFactoryAware){
+        if (bean instanceof BeanFactoryAware) {
             ((BeanFactoryAware) bean).setBeanFactory(this);
         }
 
@@ -162,7 +172,7 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
 
         try {
 
-            if(bd.getPropertyValues()!=null){
+            if (bd.getPropertyValues() != null) {
                 for (PropertyValue propertyValue : bd.getPropertyValues().getPropertyValues()) {
                     String name = propertyValue.getName();
                     Object value = propertyValue.getValue();
@@ -213,7 +223,7 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
 
             try {
                 initMethod.invoke(bean);
-            }catch (Exception ex){
+            } catch (Exception ex) {
                 throw new BeansException("Could not find an init method name " + initMethod);
             }
         }

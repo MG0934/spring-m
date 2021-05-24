@@ -6,6 +6,9 @@ public class PropertyValue {
 
     private Object value;
 
+    public PropertyValue() {
+    }
+
     public PropertyValue(String name, Object value) {
         this.name = name;
         this.value = value;
