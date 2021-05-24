@@ -2,6 +2,7 @@ package bean;
 
 import cn.hutool.core.util.StrUtil;
 import com.sun.org.apache.xpath.internal.SourceTree;
+import org.springframework.context.annotation.Autowrite;
 import org.springframework.context.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,17 @@ import java.sql.Struct;
 public class HelloService {
     @Value("${name}")
     private String value;
+
+    @Autowrite
+    private Car car;
+
+    public Car getCar() {
+        return car;
+    }
+
+    public void setCar(Car car) {
+        this.car = car;
+    }
 
     public String getValue() {
         return value;

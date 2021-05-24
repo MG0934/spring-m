@@ -6,6 +6,7 @@ import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 
 import java.lang.reflect.Field;
@@ -53,7 +54,23 @@ public class AutowriteAnnotationBeanPostProcessor implements InstantiationAwareB
         }
 
         //处理@Autowired注解（下一节实现）
+        for (Field field : fields) {
+            Autowrite autowriteAnnotation = field.getAnnotation(Autowrite.class);
+            if(autowriteAnnotation!=null){
+                Class<?> fieldType = field.getType();
+                String dependentBeanName = null;
+                Qualifier qualifierAnnotation = field.getAnnotation(Qualifier.class);
+                Object dependentBean = null;
+                if(qualifierAnnotation!=null){
+                    dependentBeanName = qualifierAnnotation.value();
+                    dependentBean = beanFactory.getBean(dependentBeanName, fieldType);
+                }else{
+                    dependentBean = beanFactory.getBean(fieldType);
+                }
 
+                BeanUtil.setFieldValue(bean, field.getName(), dependentBean);
+            }
+        }
         return pvs;
     }
 }

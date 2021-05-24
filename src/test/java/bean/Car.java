@@ -1,7 +1,11 @@
 package bean;
 
-public class Car {
+import org.springframework.context.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
+public class Car {
+    @Value("${name}")
     private String name;
 
     private Person person;
