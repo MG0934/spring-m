@@ -138,16 +138,19 @@ public abstract class AbstrctAutowriteCapableBeanFactory extends AbstractBeanFac
     protected void applyPropertyValues(String beanName, Object bean, BeanDefinition bd) {
 
         try {
-            for (PropertyValue propertyValue : bd.getPropertyValues().getPropertyValues()) {
-                String name = propertyValue.getName();
-                Object value = propertyValue.getValue();
 
-                if (value instanceof BeanReferece) {
-                    String referceName = ((BeanReferece) value).getBeanName();
-                    value = getBean(referceName);
+            if(bd.getPropertyValues()!=null){
+                for (PropertyValue propertyValue : bd.getPropertyValues().getPropertyValues()) {
+                    String name = propertyValue.getName();
+                    Object value = propertyValue.getValue();
+
+                    if (value instanceof BeanReferece) {
+                        String referceName = ((BeanReferece) value).getBeanName();
+                        value = getBean(referceName);
+                    }
+
+                    BeanUtil.setFieldValue(bean, name, value);
                 }
-
-                BeanUtil.setFieldValue(bean, name, value);
             }
 
         } catch (Exception ex) {

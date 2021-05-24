@@ -2,6 +2,8 @@ package org.springframework.beans.factory.config;
 
 import org.springframework.beans.PropertyValues;
 
+import java.util.Objects;
+
 /**
  * 类的定义信息
  */
@@ -78,5 +80,21 @@ public class BeanDefinition {
 
     public void setBeanClass(Class beanClass) {
         this.beanClass = beanClass;
+    }
+
+    //重写 equals
+    @Override
+    public boolean equals(Object o){
+
+        if(this ==o ) return true;
+        if(o==null||getClass()!=o.getClass()) return false;
+        BeanDefinition that = (BeanDefinition) o;
+        return beanClass.equals(that.getBeanClass());
+    }
+
+    //hashCode 方法
+    @Override
+    public int hashCode(){
+        return Objects.hashCode(beanClass);
     }
 }

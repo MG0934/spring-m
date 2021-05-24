@@ -9,6 +9,7 @@ import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.XmlUtil;
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.w3c.dom.Document;
@@ -39,6 +40,11 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
     public static final String DESTROY_METHOD_ATTRIBUTE = "destroy-method";
 
     public static  final String SCOPE_ATTRIBUTE = "scope";
+
+    public static  final String BASE_PACKAGE_ATTRIBUTE = "base-package";
+
+    //component-scan
+    public static  final String COMPONENT_PACKAGE_ATTRIBUTE = "context:component-scan";
 
     public XmlBeanDefinitionReader(BeanDefinitionRegistry registry) {
         super(registry);
@@ -77,6 +83,16 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
         NodeList childNodes = root.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             if(childNodes.item(i) instanceof Element){
+                //解析context:component-scan标签并扫描指定包中的类，提取类信息，组装成BeanDefinition
+                String nodeName = childNodes.item(i).getNodeName();
+                if(COMPONENT_PACKAGE_ATTRIBUTE.equals(((Element)childNodes.item(i)).getNodeName())){
+                    Element component = (Element) childNodes.item(i);
+                    String scanPath = component.getAttribute(BASE_PACKAGE_ATTRIBUTE);
+                    if(StrUtil.isEmpty(scanPath)){
+                        throw new BeansException("The value of base-package attribute can not be empty or null");
+                    }
+                    scanPackage(scanPath);
+                }
                 if(BEAN_ELEMENT.equals(((Element)childNodes.item(i)).getNodeName())){
                     //解析bean标签
                     Element bean = (Element) childNodes.item(i);
@@ -86,6 +102,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
                     String initMethodName = bean.getAttribute(INIT_METHOD_ATTRIBUTE);
                     String destroyMethodName=bean.getAttribute(DESTROY_METHOD_ATTRIBUTE);
                     String beanScope = bean.getAttribute(SCOPE_ATTRIBUTE);
+
                     //获取class文件
                     Class<?> clazz =null;
                     try {
@@ -145,5 +162,16 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
                 }
             }
         }
+    }
+
+    /**
+     * 扫描注解Component的类，提取信息，组装成BeanDefinition
+     *
+     * @param scanPath
+     */
+    private void scanPackage(String scanPath) {
+        String[] basePackages = StrUtil.splitToArray(scanPath, ',');
+        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(getRegistry());
+        scanner.doScan(basePackages);
     }
 }
